@@ -16,7 +16,6 @@ class GuiControls():
         self.packet_id = 0
         self.gui_row_number = 0
         self.checkbutton_enable_debug_messages_state = tkinter.IntVar()
-        self.checkbutton_lock_session_state = tkinter.IntVar()
         self.checkbutton_add_send_count_state = tkinter.IntVar()
         self.checkbutton_use_encryption_state = tkinter.IntVar()
         self.checkbutton_discoverable_state = tkinter.IntVar()
@@ -73,7 +72,7 @@ class GuiControls():
         self.checkbutton_use_encryption.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
         self.checkbutton_enable_debug_messages = tkinter.Checkbutton(self.frame_status, text='Enable debug messages', variable=self.checkbutton_enable_debug_messages_state, command=self.checkbutton_enable_debug_messages_callback)
         self.checkbutton_enable_debug_messages.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
-        self.checkbutton_enable_debug_messages.select()
+        #self.checkbutton_enable_debug_messages.select()
         self.checkbutton_discoverable = tkinter.Checkbutton(self.frame_status, text='Discoverable', variable=self.checkbutton_discoverable_state, command=self.checkbutton_discoverable_callback)
         self.checkbutton_discoverable.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
         self.checkbutton_discoverable.select()
@@ -114,7 +113,7 @@ class GuiControls():
         self.scroll_to_networks.grid(row=2, column=2, rowspan=3, sticky='nsew')
         self.text_to_networks['yscrollcommand'] = self.scroll_to_networks.set
 
-        # received data and lock session checkbox
+        # received data
         self.gui_row_number = 8
         tkinter.Label(gui, text='Text received:').grid(row=self.get_row_num(True), column=0, padx=pad_x-2, pady=pad_y, sticky='W')
         self.text_rec_data = tkinter.Text(gui, wrap=tkinter.WORD, undo=True, height=5, width=40)
@@ -173,6 +172,8 @@ class GuiControls():
             # there was an error
             self.add_debug_message('Connection failed')
             self.label_status_image.config(image=self.image_stop)
+            self.button_start['text'] = 'Start'
+            self.cyw = None
 
     def debug_message_callback(self, message):
         self.add_debug_message(message)
