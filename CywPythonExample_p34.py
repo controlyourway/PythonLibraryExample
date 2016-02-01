@@ -11,9 +11,6 @@ class GuiControls():
         pad_y = 3
         self.gui = gui
         self.cyw = None
-        self.data_received = ''
-        self.debug_messages = ''
-        self.packet_id = 0
         self.gui_row_number = 0
         self.checkbutton_enable_debug_messages_state = tkinter.IntVar()
         self.checkbutton_add_send_count_state = tkinter.IntVar()
@@ -149,7 +146,6 @@ class GuiControls():
         return  self.gui_row_number
 
     def add_debug_message(self, message):
-        self.debug_messages += message + '\n'
         self.text_debug_messages.insert(tkinter.END, message + '\n')
         self.text_debug_messages.see(tkinter.END)
 
@@ -234,7 +230,6 @@ class GuiControls():
                 send_data.data += str(counters.upload)
             if self.cyw.connected:
                 self.cyw.send_data(send_data)
-                self.packet_id += 1
         else:
             messagebox.showerror('Please start service', 'The service needs to be started before this action can be performed')
 
