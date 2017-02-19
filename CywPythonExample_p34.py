@@ -16,6 +16,7 @@ class GuiControls():
         self.checkbutton_add_send_count_state = tkinter.IntVar()
         self.checkbutton_use_encryption_state = tkinter.IntVar()
         self.checkbutton_discoverable_state = tkinter.IntVar()
+        self.checkbutton_use_websocket_state = tkinter.IntVar()
 
         gui.iconbitmap('images/favicon.ico')
         gui.title('Control Your Way Example')
@@ -73,6 +74,9 @@ class GuiControls():
         self.checkbutton_discoverable = tkinter.Checkbutton(self.frame_status, text='Discoverable', variable=self.checkbutton_discoverable_state, command=self.checkbutton_discoverable_callback)
         self.checkbutton_discoverable.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
         self.checkbutton_discoverable.select()
+        self.checkbutton_use_websocket = tkinter.Checkbutton(self.frame_status, text='Use WebSocket', variable=self.checkbutton_use_websocket_state, command=self.checkbutton_use_websocket_callback)
+        self.checkbutton_use_websocket.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
+        self.checkbutton_use_websocket.select()
         tkinter.Label(self.frame_status, text='Instance name:').grid(row=self.get_row_num(True), column=0, padx=pad_x-2, pady=pad_y, sticky='W')
         self.entry_instance_name = tkinter.Entry(self.frame_status, width=25)
         self.entry_instance_name.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=0, sticky='W')
@@ -164,12 +168,13 @@ class GuiControls():
             session_id = self.cyw.get_session_id()
             self.label_session_id.config(text=session_id)
             self.label_status_image.config(image=self.image_running)
+            self.button_start['text'] = 'Stop'
         else:
             # there was an error
             self.add_debug_message('Connection failed')
             self.label_status_image.config(image=self.image_stop)
             self.button_start['text'] = 'Start'
-            self.cyw = None
+            # self.cyw = None
 
     def debug_message_callback(self, message):
         self.add_debug_message(message)
@@ -246,6 +251,11 @@ class GuiControls():
         if self.cyw is not None:
             checkbutton_state = self.checkbutton_discoverable_state.get()
             self.cyw.set_discoverable(checkbutton_state)
+
+    def checkbutton_use_websocket_callback(self):
+        if self.cyw is not None:
+            checkbutton_state = self.checkbutton_use_websocket_state.get()
+            self.cyw.set_use_websocket(checkbutton_state)
 
     def click_button_set_instance_name(self):
         instance_name = self.entry_instance_name.get()
