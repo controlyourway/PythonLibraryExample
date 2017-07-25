@@ -176,7 +176,6 @@ class GuiControls():
             self.add_message('Connection failed')
             self.label_status_image.config(image=self.image_stop)
             self.button_start['text'] = 'Start'
-            # self.cyw = None
 
     def message_callback(self, message):
         self.add_message(message)
@@ -195,6 +194,8 @@ class GuiControls():
 
     def click_button_start(self):
         if self.cyw is None:
+            self.cyw = ControlYourWay_v1_p27.CywInterface()
+        if not self.cyw.connected:
             user_name = self.entry_user_name.get()
             network_password = self.entry_network_password.get()
             network_names = self.text_network_names.get("1.0", Tkinter.END).split('\n')
@@ -207,7 +208,6 @@ class GuiControls():
                 input_error = True
             if not input_error:
                 # start cyw service
-                self.cyw = ControlYourWay_v1_p27.CywInterface()
                 if self.enable_logging:
                     self.cyw.enable_logging('log.txt', logging.DEBUG, True)
                 self.cyw.set_user_name(user_name)
@@ -227,7 +227,6 @@ class GuiControls():
         else:
             self.cyw.close_connection()
             self.button_start['text'] = 'Start'
-            self.cyw = None
 
     def click_send_data(self):
         if self.cyw is not None:

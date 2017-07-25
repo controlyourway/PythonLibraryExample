@@ -285,17 +285,20 @@ class CywInterface:
         :param enable_console_logging: If true then send log messages to console
         """
         # Add a file handler
+        l = self.__locals
+        for h in list(l.logger.handlers):
+            l.logger.removeHandler(h)
         if log_filename != "":
-            filehandler = RotatingFileHandler(log_filename, maxBytes=100000, backupCount=10)
+            filehandler = RotatingFileHandler(log_filename, maxBytes=10000, backupCount=5)
             # create a logging format
             filehandler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-            self.__locals.logger.addHandler(filehandler)
+            l.logger.addHandler(filehandler)
         # Add a console handler
         if enable_console_logging:
             consolehandler = logging.StreamHandler()
             consolehandler.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
-            self.__locals.logger.addHandler(consolehandler)
-            self.__locals.logger.setLevel(log_level)
+            l.logger.addHandler(consolehandler)
+            l.logger.setLevel(log_level)
 
     def set_user_name(self, user_name):
         """Change the user name. This can only be changed when the service is not started
@@ -826,10 +829,11 @@ class CywInterface:
                             l.logger.info('WebSocket: Connection closed')
                             if l.closing_threads:
                                 l.cyw_state = l.constants.request_credentials
-                                self.connected = False
-                                if l.connection_status_callback is not None:
-                                    l.connection_status_callback(False)
-                                    l.logger.info('WebSocket: Stopped the service')
+                                if self.connected:
+                                    self.connected = False
+                                    if l.connection_status_callback is not None:
+                                        l.connection_status_callback(False)
+                                l.logger.info('WebSocket: Stopped the service')
                         else:
                             l.logger.error('WebSocket: Error closing connection')
                             if l.error_callback is not None:
@@ -1289,8 +1293,10 @@ class CywInterface:
         l.master_thread.join()
         l.websocket_thread_running = False
         l.websocket_thread.join()
-        if l.connection_status_callback is not None:
-            l.connection_status_callback(False)
+        if self.connected:
+            self.connected = False
+            if l.connection_status_callback is not None:
+                l.connection_status_callback(False)
 
     def convert_error_code_to_string(self, error_code):
         """Return a string with the description for an error code
@@ -1507,7 +1513,6 @@ class CywInterface:
                             l.websocket.on_open = self.websocket_onopen
                             l.websocket.run_forever()
                             l.websocket_state = l.constants.ws_state_waiting_for_connection
-                            # l.master_vars.wait_before_retry = self.get_epoch_time() + 5
                         except:
                             l.logger.debug('Error opening WebSocket connection')
                             time.sleep(1)
