@@ -360,7 +360,7 @@ class CywInterface:
             if l.cyw_state == l.constants.state_running:
                 if l.use_websocket:
                     # send websocket termination message
-                    l.websocket.send('~c=c' + l.constants.terminating_string)
+                    l.websocket.send('~c=t' + l.constants.terminating_string)
                     l.websocket_state = l.constants.ws_state_closing_connection
                     l.logger.debug('WebSocket: Close connection message sent')
                 else:
@@ -828,7 +828,7 @@ class CywInterface:
                             l.websocket.close()
                             l.logger.info('WebSocket: Connection closed')
                             if l.closing_threads:
-                                l.cyw_state = l.constants.request_credentials
+                                l.cyw_state = l.constants.state_request_credentials
                                 if self.connected:
                                     self.connected = False
                                     if l.connection_status_callback is not None:
@@ -973,11 +973,11 @@ class CywInterface:
                             l.logger.debug('Protocol error')
                         elif error_code == '12':  # invalid/expired id
                             send_error = True
-                            l.cyw_state = l.constants.request_credentials
+                            l.cyw_state = l.constants.state_request_credentials
                             l.logger.debug('Expired/invalid session id')
                         elif error_code == '15':  # response to a cancel request
                             if l.closing_threads:
-                                l.cyw_state = l.constants.request_credentials
+                                l.cyw_state = l.constants.state_request_credentials
                                 self.connected = False
                                 if l.connection_status_callback is not None:
                                     l.connection_status_callback(False)
@@ -1252,7 +1252,7 @@ class CywInterface:
         :return:
         """
         l = self.__locals
-        if l.cyw_state != l.constants.request_credentials:  # service is running
+        if l.cyw_state != l.constants.state_request_credentials:  # service is running
             send_packet = CloudSendPacket()
             send_packet.url = l.server_ip_addr
             send_packet.url_ssl = l.upload_ssl_url
@@ -1512,6 +1512,7 @@ class CywInterface:
                                             on_close = self.websocket_onclose)
                             l.websocket.on_open = self.websocket_onopen
                             l.websocket.run_forever()
+                            l.logger.debug('WebSocket connection returned')
                             l.websocket_state = l.constants.ws_state_waiting_for_connection
                         except:
                             l.logger.debug('Error opening WebSocket connection')
