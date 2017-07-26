@@ -1289,10 +1289,10 @@ class CywInterface:
         l.download_thread.join()
         l.upload_thread_running = False
         l.upload_thread.join()
-        l.master_thread_running = False
-        l.master_thread.join()
         l.websocket_thread_running = False
         l.websocket_thread.join()
+        l.master_thread_running = False
+        l.master_thread.join()
         if self.connected:
             self.connected = False
             if l.connection_status_callback is not None:
