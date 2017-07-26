@@ -590,7 +590,7 @@ class CywInterface:
         while l.master_thread_running:
             something_happened = False
             if not m.waiting_for_response:
-                if l.cyw_state == l.constants.state_request_credentials:
+                if l.cyw_state == l.constants.state_request_credentials and not l.closing_threads:
                     # check if enough time elapsed between retries to not swamp the server
                     if m.wait_before_retry < self.get_epoch_time():
                         something_happened = True
