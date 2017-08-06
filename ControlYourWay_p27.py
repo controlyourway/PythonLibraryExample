@@ -914,9 +914,9 @@ class CywInterface:
                                             break
                                         else:
                                             session_id_str += l.device_id[i]
-                                    # store the errorCodes
+                                    # store the error codes
                                     store_error_codes = False
-                                    l.errorCodes = CreateCywDictionary()
+                                    l.error_codes = CreateCywDictionary()
                                     for ie in range(len(cyw_dict.keys)):
                                         if cyw_dict.keys[ie] == '0':
                                             # this is the first error code
@@ -1306,9 +1306,9 @@ class CywInterface:
         if self.__locals.error_codes is None:
             return error_code
         if type(error_code) is int:
-            error_code_num = error_code
+            error_code_num = str(error_code)
         elif type(error_code) is str:
-            error_code_num = int(error_code)
+            error_code_num = error_code
         else:
             return error_code
         error_str = CywInterface.get_cyw_dictionary_single_value(self.__locals.error_codes, error_code_num)

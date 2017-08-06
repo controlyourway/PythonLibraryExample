@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import ControlYourWay_v1_p27
+import ControlYourWay_p27
 import Tkinter
 import tkMessageBox
 import logging
@@ -194,7 +194,7 @@ class GuiControls():
 
     def click_button_start(self):
         if self.cyw is None:
-            self.cyw = ControlYourWay_v1_p27.CywInterface()
+            self.cyw = ControlYourWay_p27.CywInterface()
         if not self.cyw.connected:
             user_name = self.entry_user_name.get()
             network_password = self.entry_network_password.get()
@@ -230,7 +230,7 @@ class GuiControls():
 
     def click_send_data(self):
         if self.cyw is not None:
-            send_data = ControlYourWay_v1_p27.CreateSendData()
+            send_data = ControlYourWay_p27.CreateSendData()
             send_data.data = self.entry_send_data.get()
             send_data.data_type = self.entry_data_type.get()
             send_data.to_session_ids = self.entry_to_session_ids.get().split(',')

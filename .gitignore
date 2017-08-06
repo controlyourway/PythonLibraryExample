@@ -1,6 +1,7 @@
 .idea/
-ControlYourWay_v1_p27.pyc
-ControlYourWay_v1_p34.pyc
+ControlYourWay_p27.pyc
+ControlYourWay_p34.pyc
 __pycache__/
 log.txt*
 settingsTest.ini
+*.pyc
