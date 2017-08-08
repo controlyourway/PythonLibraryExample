@@ -306,7 +306,6 @@ if __name__ == "__main__":
         param_cyw_enable_logging = False
         param_cyw_network_names = []
         param_cyw_network_names.append('network 1')
-
     else:
         config = ConfigParser.ConfigParser()
         config.read(settings_filename)

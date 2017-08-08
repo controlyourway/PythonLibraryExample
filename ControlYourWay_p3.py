@@ -309,16 +309,21 @@ class CywInterface:
         :param network_names: An array of network names
         :return: 0 if successful
         """
-        self.__locals.network_names = []
+        l = self.__locals
+        l.network_names = []
         for i in range(len(network_names)):
             # remove empty strings from array
             if len(network_names[i]) > 0:
-                self.__locals.network_names.append(network_names[i])
-        self.__locals.networks_updated = False
-        self.__locals.logger.debug('New network names set')
-        if self.__locals.cyw_state == self.__locals.constants.state_running:
-            # if service is already running then stop the download request so that new networks can be loaded
-            self.send_cancel_request()
+                l.network_names.append(network_names[i])
+        l.networks_updated = False
+        l.logger.debug('New network names set')
+        if l.cyw_state == l.constants.state_running:
+            if l.use_websocket:
+                if l.websocket_state == l.constants.ws_state_running:
+                    l.websocket_state = l.constants.ws_state_set_listen_to_networks
+            else:
+                # if service is already running then stop the download request so that new networks can be loaded
+                self.send_cancel_request()
         return '0'
 
     def get_network_names(self):
@@ -821,19 +826,13 @@ class CywInterface:
                     something_happened = True
                     l.websocket_state = l.constants.ws_state_connected_not_auth
                     m.waiting_for_response = False
-                if (m.wait_before_retry < self.get_epoch_time()) and \
-                        (l.websocket_state == l.constants.ws_state_connected_auth_sent):
-                    # authorisation sent but has timed out, send it again
-                    something_happened = True
-                    l.websocket_state = l.constants.ws_state_connected_not_auth
-                    m.waiting_for_response = False
                     l.logger.debug('WebSocket: Auth timed out, trying again')
                 if (m.wait_before_retry < self.get_epoch_time()) and \
                         (l.websocket_state == l.constants.ws_state_set_listen_to_networks_sent):
                     # no response when setting networks, try again
                     something_happened = True
                     m.waiting_for_response = False
-                    l.websocket_state = l.constants.ws_state_set_listen_to_networks_sent
+                    l.websocket_state = l.constants.ws_state_set_listen_to_networks
                     l.logger.debug('WebSocket: Setting networks timed out, trying again')
                 if (l.websocket_state == l.constants.ws_state_running) and \
                         (self.check_if_websocket_keep_alive_expired()):

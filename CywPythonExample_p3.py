@@ -1,22 +1,27 @@
 #!/usr/bin/python
 
-import ControlYourWay_v1_p34
+import ControlYourWay_p3
 import tkinter
 from tkinter import messagebox
+import logging
+import sys
+import configparser
+import os
+
 
 class GuiControls():
-    def __init__(self):
+    def __init__(self, cyw_username, cyw_password, cyw_enable_logging, cyw_network_names):
         gui = tkinter.Tk()
         pad_x = 5
         pad_y = 3
         self.gui = gui
         self.cyw = None
         self.gui_row_number = 0
-        self.checkbutton_enable_debug_messages_state = tkinter.IntVar()
         self.checkbutton_add_send_count_state = tkinter.IntVar()
         self.checkbutton_use_encryption_state = tkinter.IntVar()
         self.checkbutton_discoverable_state = tkinter.IntVar()
         self.checkbutton_use_websocket_state = tkinter.IntVar()
+        self.enable_logging = cyw_enable_logging
 
         gui.iconbitmap('images/favicon.ico')
         gui.title('Control Your Way Example')
@@ -24,19 +29,19 @@ class GuiControls():
         # user name, network password, set network names and start button (column 1)
         tkinter.Label(gui, text='User name:').grid(row=self.get_row_num(False), column=0, padx=pad_x-2, pady=pad_y, sticky='W')
         self.entry_user_name = tkinter.Entry(gui, width=25)
-        self.entry_user_name.insert(0, 'your_email@address.com')
+        self.entry_user_name.insert(0, cyw_username)
         self.entry_user_name.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=0, sticky='W')
         tkinter.Label(gui, text='Network password:').grid(row=self.get_row_num(True), column=0, padx=pad_x-2, pady=pad_y, sticky='W')
         self.entry_network_password = tkinter.Entry(gui, width=25)
         self.entry_network_password.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=0, sticky='W')
-        self.entry_network_password.insert(0, 'network_password')
+        self.entry_network_password.insert(0, cyw_password)
         tkinter.Label(gui, text='Network names:').grid(row=self.get_row_num(True), column=0, padx=pad_x-2, pady=pad_y, sticky='W')
         self.text_network_names = tkinter.Text(gui, wrap=tkinter.WORD, undo=True, height=5, width=15)
         self.text_network_names.grid(row=self.get_row_num(True), column=0, columnspan=1, padx=pad_x-2, pady=0, sticky='WE')
         #self.scroll_network_names = tkinter.Scrollbar(gui, command=self.text_network_names.yview)
         #self.scroll_network_names.grid(row=self.get_row_num(False), column=1, sticky='nsew')
         #self.text_network_names['yscrollcommand'] = self.scroll_network_names.set
-        self.text_network_names.insert(tkinter.INSERT, 'network 1')
+        self.text_network_names.insert(tkinter.INSERT, cyw_network_names)
         self.button_set_network_names = tkinter.Button(gui, text='Set network names', width=16, command=self.click_button_set_network_names)
         self.button_set_network_names.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
         self.image_stop = tkinter.PhotoImage(file='images/cywStop.gif')
@@ -65,12 +70,9 @@ class GuiControls():
         self.label_buffered_amount = tkinter.Label(self.frame_status, text='-1')
         self.label_buffered_amount.grid(row=self.get_row_num(False), column=1, padx=status_pad_x - 2, pady=status_pad_y, sticky='W')
 
-        # use encryption, enable debug messages and discoverable check boxes, set instance name
+        # use encryption, discoverable check boxes, set instance name
         self.checkbutton_use_encryption = tkinter.Checkbutton(self.frame_status, text='Use encryption', variable=self.checkbutton_use_encryption_state, command=self.checkbutton_use_encryption_callback)
         self.checkbutton_use_encryption.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
-        self.checkbutton_enable_debug_messages = tkinter.Checkbutton(self.frame_status, text='Enable debug messages', variable=self.checkbutton_enable_debug_messages_state, command=self.checkbutton_enable_debug_messages_callback)
-        self.checkbutton_enable_debug_messages.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
-        #self.checkbutton_enable_debug_messages.select()
         self.checkbutton_discoverable = tkinter.Checkbutton(self.frame_status, text='Discoverable', variable=self.checkbutton_discoverable_state, command=self.checkbutton_discoverable_callback)
         self.checkbutton_discoverable.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
         self.checkbutton_discoverable.select()
@@ -131,15 +133,15 @@ class GuiControls():
         self.button_set_download_timeout = tkinter.Button(gui, text='Set timeout', width=12, command=self.click_set_download_timeout)
         self.button_set_download_timeout.grid(row=self.get_row_num(True), column=1, padx=pad_x, pady=pad_y, sticky='W')
 
-        # debug messages
-        tkinter.Label(gui, text='Debug messages:').grid(row=self.get_row_num(True), column=0, padx=pad_x-2, pady=pad_y, sticky='W')
-        self.text_debug_messages = tkinter.Text(gui, wrap=tkinter.WORD, undo=True, height=5, width=40)
-        self.text_debug_messages.grid(row=self.get_row_num(True), column=0, columnspan=3, padx=pad_x-2, pady=0, sticky='WE')
-        self.scroll_debug_messages = tkinter.Scrollbar(gui, command=self.text_debug_messages.yview)
-        self.scroll_debug_messages.grid(row=self.get_row_num(False), column=3, sticky='nsew')
-        self.text_debug_messages['yscrollcommand'] = self.scroll_debug_messages.set
-        self.button_clear_debug_messages = tkinter.Button(gui, text='Clear', width=12, command=self.click_clear_debug_messages)
-        self.button_clear_debug_messages.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
+        # messages
+        tkinter.Label(gui, text='Messages:').grid(row=self.get_row_num(True), column=0, padx=pad_x-2, pady=pad_y, sticky='W')
+        self.text_messages = tkinter.Text(gui, wrap=tkinter.WORD, undo=True, height=5, width=40)
+        self.text_messages.grid(row=self.get_row_num(True), column=0, columnspan=3, padx=pad_x-2, pady=0, sticky='WE')
+        self.scroll_messages = tkinter.Scrollbar(gui, command=self.text_messages.yview)
+        self.scroll_messages.grid(row=self.get_row_num(False), column=3, sticky='nsew')
+        self.text_messages['yscrollcommand'] = self.scroll_messages.set
+        self.button_clear_messages = tkinter.Button(gui, text='Clear', width=12, command=self.click_clear_messages)
+        self.button_clear_messages.grid(row=self.get_row_num(True), column=0, padx=pad_x, pady=pad_y, sticky='W')
         self.gui.protocol("WM_DELETE_WINDOW", self.form_closing)
 
         gui.mainloop()
@@ -149,14 +151,14 @@ class GuiControls():
             self.gui_row_number += 1
         return  self.gui_row_number
 
-    def add_debug_message(self, message):
-        self.text_debug_messages.insert(tkinter.END, message + '\n')
-        self.text_debug_messages.see(tkinter.END)
+    def add_message(self, message):
+        self.text_messages.insert(tkinter.END, message + '\n')
+        self.text_messages.see(tkinter.END)
 
     def data_received_callback(self, data, data_type, from_who):
         if self.cyw.get_discoverable() and data_type == 'Discovery Response':
             # valid discovery response received
-            self.add_debug_message('Device Discovered: ' + data + ', ID: ' + str(from_who))
+            self.add_message('Device Discovered: ' + data + ', ID: ' + str(from_who))
         else:
             message = data + ', ' + data_type + ', ' + str(from_who)
             self.text_rec_data.insert(tkinter.END, message + '\n')
@@ -164,20 +166,22 @@ class GuiControls():
 
     def connection_status_callback(self, connected):
         if connected:  # connection was successful
-            self.add_debug_message('Connection successful')
+            self.add_message('Connection successful')
             session_id = self.cyw.get_session_id()
             self.label_session_id.config(text=session_id)
             self.label_status_image.config(image=self.image_running)
             self.button_start['text'] = 'Stop'
         else:
             # there was an error
-            self.add_debug_message('Connection failed')
+            self.add_message('Connection failed')
             self.label_status_image.config(image=self.image_stop)
             self.button_start['text'] = 'Start'
-            # self.cyw = None
 
-    def debug_message_callback(self, message):
-        self.add_debug_message(message)
+    def message_callback(self, message):
+        self.add_message(message)
+
+    def error_callback(self, error_code):
+        self.add_message('Error: ' + error_code + ' - ' + self.cyw.convert_error_code_to_string(error_code))
 
     def click_button_set_network_names(self):
         if self.cyw is not None:
@@ -190,6 +194,8 @@ class GuiControls():
 
     def click_button_start(self):
         if self.cyw is None:
+            self.cyw = ControlYourWay_p3.CywInterface()
+        if not self.cyw.connected:
             user_name = self.entry_user_name.get()
             network_password = self.entry_network_password.get()
             network_names = self.text_network_names.get("1.0", tkinter.END).split('\n')
@@ -202,12 +208,13 @@ class GuiControls():
                 input_error = True
             if not input_error:
                 # start cyw service
-                self.cyw = ControlYourWay_v1_p34.CywInterface()
+                if self.enable_logging:
+                    self.cyw.enable_logging('log.txt', logging.DEBUG, True)
                 self.cyw.set_user_name(user_name)
                 self.cyw.set_network_password(network_password)
                 self.cyw.set_network_names(network_names)
                 self.cyw.set_connection_status_callback(self.connection_status_callback)
-                self.checkbutton_enable_debug_messages_callback()   # set callback if debug messages are enabled
+                self.cyw.set_error_callback(self.error_callback)
                 self.cyw.set_data_received_callback(self.data_received_callback)
                 self.checkbutton_use_encryption_callback()   # turn encryption on or off
                 checkbutton_state = self.checkbutton_discoverable_state.get()
@@ -220,11 +227,10 @@ class GuiControls():
         else:
             self.cyw.close_connection()
             self.button_start['text'] = 'Start'
-            self.cyw = None
 
     def click_send_data(self):
         if self.cyw is not None:
-            send_data = ControlYourWay_v1_p34.CreateSendData()
+            send_data = ControlYourWay_p3.CreateSendData()
             send_data.data = self.entry_send_data.get()
             send_data.data_type = self.entry_data_type.get()
             send_data.to_session_ids = self.entry_to_session_ids.get().split(',')
@@ -237,15 +243,6 @@ class GuiControls():
                 self.cyw.send_data(send_data)
         else:
             messagebox.showerror('Please start service', 'The service needs to be started before this action can be performed')
-
-    def checkbutton_enable_debug_messages_callback(self):
-        checkbutton_state = self.checkbutton_enable_debug_messages_state.get()
-        if self.cyw is not None:
-            if checkbutton_state == 1:
-                self.cyw.set_debug_messages_callback(self.debug_message_callback)
-                self.cyw.set_enable_debug_messages(True)
-            else:
-                self.cyw.set_enable_debug_messages(False)
 
     def checkbutton_discoverable_callback(self):
         if self.cyw is not None:
@@ -264,8 +261,8 @@ class GuiControls():
     def click_clear_rec_data(self):
         self.text_rec_data.delete(1.0, tkinter.END)
 
-    def click_clear_debug_messages(self):
-        self.text_debug_messages.delete(1.0, tkinter.END)
+    def click_clear_messages(self):
+        self.text_messages.delete(1.0, tkinter.END)
 
     def click_set_download_timeout(self):
         if self.cyw is not None:
@@ -297,5 +294,32 @@ class GuiControls():
 
 
 if __name__ == "__main__":
-    # cyw = CywInterface()
-    gui_controls = GuiControls()
+    #check if settings file was specified
+    if len(sys.argv) == 2:
+        settings_filename = sys.argv[1]
+    else:
+        settings_filename = 'settings.ini'
+    if not os.path.isfile(settings_filename):
+        print('Could not load ' + settings_filename + ', using default settings')
+        param_cyw_username = 'username'
+        param_cyw_password = 'password'
+        param_cyw_enable_logging = False
+        param_cyw_network_names = []
+        param_cyw_network_names.append('network 1')
+    else:
+        config = configparser.ConfigParser()
+        config.read(settings_filename)
+        connection_list = config.options('ControlYourWayConnectionDetails')
+        param_cyw_username = config.get('ControlYourWayConnectionDetails', 'username')
+        param_cyw_password = config.get('ControlYourWayConnectionDetails', 'password')
+        param_cyw_enable_logging = True
+        if config.get('ControlYourWayConnectionDetails', 'enableLogging') == '0':
+            param_cyw_enable_logging = False
+        param_cyw_network_names = ''
+        network_names_option = 'network'
+        for item in connection_list:  # search for network names
+            if item[:len(network_names_option)] == network_names_option:
+                if len(param_cyw_network_names) > 0:
+                    param_cyw_network_names += '\r\n'
+                param_cyw_network_names += config.get('ControlYourWayConnectionDetails', item)
+    gui_controls = GuiControls(param_cyw_username, param_cyw_password, param_cyw_enable_logging, param_cyw_network_names)
