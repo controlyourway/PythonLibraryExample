@@ -1,4 +1,4 @@
-# Python Example V1
+# Python Example
 
 This repository contains the example files Python V2.7 and V3 for our library.
 
