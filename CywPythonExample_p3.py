@@ -12,16 +12,18 @@ import os
 class GuiControls():
     def __init__(self, cyw_username, cyw_password, cyw_enable_logging, cyw_network_names):
         gui = tkinter.Tk()
+        self.cyw = ControlYourWay_p3.CywInterface()
+        if cyw_enable_logging:
+            self.cyw.enable_logging('log.txt', logging.DEBUG, True)
+        self.cyw.log_application_message(logging.INFO, "CYW Python Example started")
         pad_x = 5
         pad_y = 3
         self.gui = gui
-        self.cyw = None
         self.gui_row_number = 0
         self.checkbutton_add_send_count_state = tkinter.IntVar()
         self.checkbutton_use_encryption_state = tkinter.IntVar()
         self.checkbutton_discoverable_state = tkinter.IntVar()
         self.checkbutton_use_websocket_state = tkinter.IntVar()
-        self.enable_logging = cyw_enable_logging
 
         gui.iconbitmap('images/favicon.ico')
         gui.title('Control Your Way Example')
@@ -193,8 +195,6 @@ class GuiControls():
             self.cyw.send_discovery()
 
     def click_button_start(self):
-        if self.cyw is None:
-            self.cyw = ControlYourWay_p3.CywInterface()
         if not self.cyw.connected:
             user_name = self.entry_user_name.get()
             network_password = self.entry_network_password.get()
@@ -208,8 +208,6 @@ class GuiControls():
                 input_error = True
             if not input_error:
                 # start cyw service
-                if self.enable_logging:
-                    self.cyw.enable_logging('log.txt', logging.DEBUG, True)
                 self.cyw.set_user_name(user_name)
                 self.cyw.set_network_password(network_password)
                 self.cyw.set_network_names(network_names)
