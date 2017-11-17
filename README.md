@@ -1,9 +1,15 @@
 # Python Example
 
-This repository contains the example files Python V2.7 and V3 for our library.
+This repository contains the example files for Python V2.7 and V3 for our library.
 
-The latest library uses WebSocket for communication. This means WebSocket client needs to be installed for it to work. Please use the following command to install websocket client:
-pip install websocket-client
+This example needs to have the Control Your Way library installed:
+pip install controlyourway
+
+To upgrade to the latest version:
+pip install controlyourway --upgrade
+
+To download the source files:
+https://github.com/controlyourway/PythonLibrary
 
 The library documentation can be found at:
 https://www.controlyourway.com/Resources/PythonLibraryHelp
